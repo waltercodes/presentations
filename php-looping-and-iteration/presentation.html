@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>PHP ArrayIterator Class</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style type="text/css">
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+# PHP Looping & Iteration
+# Walter Scott
+# @waltercodes
+---
+
+# What will be Covered
+* looping over an array
+ * traditional for loop
+ * foreach
+* array_filter
+* array_walk
+* iterating over objects
+* generators
+
+---
+
+# Why talk about looping?
+* everybody loops
+* reviewing basic topics is good for you
+
+---
+
+# Traditional for Loop
+
+```php
+$cats = ["Roo", "Tigerlily", "Emerson", "Toby", "Sassy", "Sally", "Sammy"];
+
+echo "loop output:\n";
+for ($key = 0; $key < count($cats); $key++) {
+  echo "$key:{$cats[$key]}, ";
+}
+echo "state of array post-loop:\n";
+array_walk($cats, function($cat, $key) {
+  echo "$key:$cat, ";
+});
+
+# loop output:
+# 0:Roo, 1:Tigerlily, 2:Emerson, 3:Toby, 4:Sassy, 5:Sally, 6:Sammy,
+# state of array post-loop:
+# 0:Roo, 1:Tigerlily, 2:Emerson, 3:Toby, 4:Sassy, 5:Sally, 6:Sammy,
+```
+---
+
+# Traditional for Loop -- Remove cats whose names start with "T"
+
+```php
+$cats = ["Roo", "Tigerlily", "Emerson", "Toby", "Sassy", "Sally", "Sammy"];
+
+echo "loop output:\n";
+for ($key = 0; $key < count($cats); $key++) {
+  echo "$key:{$cats[$key]}, ";
+  if (substr($cats[$key], 0, 1) == "T") {
+    unset($cats[$key]);
+  }
+}
+echo "state of array post-loop:\n";
+array_walk($cats, function($cat, $key) {
+  echo "$key:$cat, ";
+});
+
+# loop output:
+# 0:Roo, 1:Tigerlily, 2:Emerson, 3:Toby, 4:Sassy,
+# state of array post-loop:
+# 0:Roo, 2:Emerson, 4:Sassy, 5:Sally, 6:Sammy,
+```
+
+---
+
+# Traditional for Loop -- Remove cats -- count once
+
+```php
+$cats = ["Roo", "Tigerlily", "Emerson", "Toby", "Sassy", "Sally", "Sammy"];
+
+echo "loop output:\n";
+$catcount = count($cats);
+for ($key = 0; $key < $catcount; $key++) {
+  echo "$key:{$cats[$key]}, ";
+  if (substr($cats[$key], 0, 1) == "T") {
+    unset($cats[$key]);
+  }
+}
+echo "state of array post-loop:\n";
+array_walk($cats, function($cat, $key) {
+  echo "$key:$cat, ";
+});
+
+# loop output:
+# 0:Roo, 1:Tigerlily, 2:Emerson, 3:Toby, 4:Sassy, 5:Sally, 6:Sammy,
+# state of array post-loop:
+# 0:Roo, 2:Emerson, 4:Sassy, 5:Sally, 6:Sammy,
+```
+---
+
+# Traditional for Loop -- remove next cat
+
+```php
+$cats = ["Roo", "Tigerlily", "Emerson", "Toby", "Sassy", "Sally", "Sammy"];
+
+echo "loop output:\n";
+$catcount = count($cats);
+for ($key = 0; $key < $catcount; $key++) {
+  if (!isset($cats[$key])) {
+    continue;
+  }
+  echo "$key: {$cats[$key]}, ";
+  if (substr($cats[$key], 0, 1) == "T") {
+    unset($cats[$key + 1]);
+  }
+}
+echo "state of array post-loop:\n";
+array_walk($cats, function($cat, $key) {
+  echo "$key:$cat, ";
+});
+
+# loop output:
+# 0:Roo, 1:Tigerlily, 3:Toby, 5:Sally, 6:Sammy,
+# state of array post-loop:
+# 0:Roo, 1:Tigerlily, 3:Toby, 5:Sally, 6:Sammy,
+```
+---
+
+
+# foreach
+
+```php
+$cats = ["Roo", "Tigerlily", "Emerson", "Toby", "Sassy", "Sally", "Sammy"];
+
+echo "loop output:\n";
+foreach ($cats as $key => $cat) {
+  echo "$key: $cat, ";
+}
+echo "state of array post-loop:\n";
+array_walk($cats, function($cat, $key) {
+  echo "$key:$cat, ";
+});
+
+# loop output:
+# 0:Roo, 1:Tigerlily, 2:Emerson, 3:Toby, 4:Sassy, 5:Sally, 6:Sammy,
+# state of array post-loop:
+# 0:Roo, 1:Tigerlily, 2:Emerson, 3:Toby, 4:Sassy, 5:Sally, 6:Sammy,
+```
+---
+
+# foreach -- Remove cats whose names start with "T"
+
+```php
+$cats = ["Roo", "Tigerlily", "Emerson", "Toby", "Sassy", "Sally", "Sammy"];
+
+echo "loop output:\n";
+foreach ($cats as $key => $cat) {
+  echo "$key:$cat, ";
+  if (substr($cat, 0, 1) == "T") {
+    unset($cats[$key]);
+  }
+}
+echo "state of array post-loop:\n";
+array_walk($cats, function($cat, $key) {
+  echo "$key:$cat, ";
+});
+
+# loop output:
+# 0:Roo, 1:Tigerlily, 2:Emerson, 3:Toby, 4:Sassy, 5:Sally, 6:Sammy,
+# state of array post-loop:
+# 0:Roo, 2:Emerson, 4:Sassy, 5:Sally, 6:Sammy,
+```
+---
+
+# foreach -- remove next cat
+
+```php
+$cats = ["Roo", "Tigerlily", "Emerson", "Toby", "Sassy", "Sally", "Sammy"];
+
+echo "loop output:\n";
+foreach ($cats as $key => $cat) {
+  echo "$key:{$cat}, ";
+  if (substr($cat, 0, 1) == "T") {
+    unset($cats[$key + 1]);
+  }
+}
+echo "state of array post-loop:\n";
+array_walk($cats, function($cat, $key) {
+  echo "$key:$cat, ";
+});
+
+# loop output:
+# 0:Roo, 1:Tigerlily, 2:Emerson, 3:Toby, 4:Sassy, 5:Sally, 6:Sammy, 
+# state of array post-loop:
+# 0:Roo, 1:Tigerlily, 3:Toby, 5:Sally, 6:Sammy,
+```
+---
+
+# array_filter -- Remove cats whose names start with "T"
+
+```php
+$cats = ["Roo", "Tigerlily", "Emerson", "Toby", "Sassy", "Sally", "Sammy"];
+
+$cats = array_filter($cats, function($cat) {
+  return !(substr($cat, 0, 1) == "T");
+});
+
+echo "state of array post-array_filter:\n";
+array_walk($cats, function($cat, $key) {
+  echo "$key:$cat, ";
+});
+
+# state of array post-array_filter:
+# 0:Roo, 2:Emerson, 4:Sassy, 5:Sally, 6:Sammy,
+```
+---
+# array_walk - Knight cats whose names start with 'E'
+```php
+$cats = ["Roo", "Tigerlily", "Emerson", "Toby", "Sassy", "Sally", "Sammy"];
+
+echo "array_walk output:\n";
+array_walk($cats, function(&$cat, $key) {
+  echo "$key:$cat, ";
+  if (substr($cat, 0, 1) == "E") {
+    $cat = "Sir " . $cat;
+  }
+});
+echo "state of array post-array_filter:\n";
+array_walk($cats, function($cat, $key) {
+  echo "$key:$cat, ";
+});
+
+# array_walk output:
+# 0:Roo, 1:Tigerlily, 2:Emerson, 3:Toby, 4:Sassy, 5:Sally, 6:Sammy,
+# state of array post-array_filter:
+# 0:Roo, 1:Tigerlily, 2:Sir Emerson, 3:Toby, 4:Sassy, 5:Sally, 6:Sammy,
+```
+---
+# Array Functions - Documentation
+http://php.net/manual/en/ref.array.php
+---
+# Switching Gears - Objects
+* a few notes about tools
+* how do you know if you can use foreach on an object? (PDOStatement as example)
+* exploring the myriad options for working through an object with foreach and friends
+---
+# psysh
+* A runtime developer console, interactive debugger and REPL for PHP.
+* AWESOME! The best tool I've found for exploring PHP concepts.
+* Check out psysh.org for more details.
+---
+# SPL Function: class_implements
+```php
+array class_implements ( mixed $class [, bool $autoload = true ] )
+```
+* allows you to see which interfaces are implemented by a particular class and its parents
+---
+# SPL Function: class_parents
+```php
+array class_parents ( mixed $class [, bool $autoload = true ] )
+```
+* returns an array with the names of the parent classes for the specified class
+* useful to see which capabilities come in through inheritance
+---
+# SPL Function: class_uses
+```php
+array class_uses ( mixed $class [, bool $autoload = true ] )
+```
+* returns an array of the traits used by the specified class
+* does NOT include traits used by parent classes
+---
+# I can u'z foreach?
+* to find out if you can use foreach on an object:
+ * call class_implements(object)
+ * look for "Traversable" in the array that gets returned
+---
+# example: PDO Result
+```php
+$pdo = new PDO('mysql:host=localhost;dbname=animals', 'user', 'password', array(
+  PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC));
+class_implements($pdo);
+# []
+$statement = $pdo->prepare("select id, name from cat");
+class_implements($statement);
+# ["Traversable" => "Traversable"]
+$statement->execute();
+foreach ($statement as $row) {
+  echo "{$row['id']}:{$row['name']}, ";
+}
+# 1:Roo, 2:Tigerlily, 3:Emerson, 4:Toby, 5:Sassy, 6:Sally, 7:Sammy,
+unset($row);
+unset($statement);
+unset($pdo);
+```
+---
+# Make your own Traversable Object
+* Traversable is an abstract interface that can't be implemented alone except by internal classes (such as PDOStatement). Mere mortals must instead implement IteratorAggregate or Iterator.
+* Traversable is just a placeholder. It doesn't have any methods in its contract.
+---
+# Implement Traversable through the Iterator Interface
+```php
+Iterator extends Traversable {
+  /* Methods */
+  abstract public mixed current ( void )
+  abstract public scalar key ( void )
+  abstract public void next ( void )
+  abstract public void rewind ( void )
+  abstract public boolean valid ( void )
+}
+```
+---
+```php
+class Factorialer implements Iterator {
+  private $current = 0;
+  public function __construct() {
+    $this->rewind();
+  }
+  public function rewind() {
+    $this->current = 0;
+  }
+  public function current() {
+    return $this->factorial($this->current);
+  }
+  public function key() {
+    return $this->current;
+  }
+  public function next() {
+    ++$this->current;
+  }
+  public function valid() {
+    return true;
+  }
+  private function factorial($n) {
+    if ($n == 1 || $n == 0) return 1;
+    return $n * $this->factorial($n-1);
+  }
+}
+```
+---
+```php
+$factorialer = new Factorialer;
+foreach ($factorialer as $key => $factorial) {
+  echo "$key:$factorial, ";
+  if ($key > 9) break;
+}
+# 0:1, 1:1, 2:2, 3:6, 4:24, 5:120, 6:720, 7:5040, 8:40320, 9:362880, 10:3628800, 
+```
+---
+# Using IteratorAggregate
+```php
+IteratorAggregate extends Traversable {
+
+  /* Methods */
+  abstract public Traversable getIterator ( void )
+}
+```
+---
+```php
+class Cats implements IteratorAggregate {
+  public $first = "Roo";
+  public $second = "Tigerlily";
+  public $third = "Emerson";
+  public $fourth = "Toby";
+  public $fifth = "Sassy";
+  public $sixth = "Sally";
+  public $seventh =  "Sammy";
+
+  public function getIterator() {
+    return new ArrayIterator($this);
+  }
+}
+
+$cats = new Cats();
+class_implements($cats);
+#=> [
+#       "IteratorAggregate" => "IteratorAggregate",
+#       "Traversable"       => "Traversable"
+#   ]
+
+foreach ($cats as $key => $cat) {
+  echo "$key:$cat, ";
+}
+
+# first:Roo, second:Tigerlily, third:Emerson, fourth:Toby, fifth:Sassy, 
+# sixth:Sally, seventh:Sammy,
+```
+---
+# ArrayIterator
+* implements implements ArrayAccess , SeekableIterator , Countable , and Serializable
+* allows you to iterate over an object that doesn't itself implement the iterator functions
+* stores that object internally as an array that can be modified and returned as an array
+* seems to support lots of other things, use cases aren't super clear to me
+---
+# Full List of SPL Iterators
+```php
+ArrayIterator
+  RecursiveArrayIterator
+EmptyIterator
+IteratorIterator
+  AppendIterator
+  CachingIterator
+    RecursiveCachingIterator
+  FilterIterator
+    CallbackFilterIterator
+      RecursiveCallbackFilterIterator
+    RecursiveFilterIterator
+      ParentIterator
+    RegexIterator
+      RecursiveRegexIterator
+  InfiniteIterator
+  LimitIterator
+  NoRewindIterator
+MultipleIterator
+RecursiveIteratorIterator
+  RecursiveTreeIterator
+DirectoryIterator (extends SplFileInfo)
+  FilesystemIterator
+    GlobIterator
+    RecursiveDirectoryIterator
+```
+---
+# Generators
+* can be thought of as 'lazy iterators'
+* when you call a function that contains a 'yield' statement, it returns an object of type Generator (which implements the Iterator interface)
+---
+```php
+function random_random()
+{
+  for ($i = 0; $i <= rand(1, 15); $i++) {
+    yield rand(1, 1000);
+  }
+}
+$iterator = random_random();
+class_implements($iterator);
+# => [
+#       "Iterator"    => "Iterator",
+#       "Traversable" => "Traversable"
+#   ]
+foreach (random_random() as $num) {
+  echo "$num, ";
+}
+# 381, 868, 252, 534, 323, 108, 614, 341, 934, 814,
+```
+    </textarea>
+    <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
